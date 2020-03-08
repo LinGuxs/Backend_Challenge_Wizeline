@@ -1,0 +1,556 @@
+{
+	"info": {
+		"_postman_id": "21dcf556-05f7-480e-ab11-7567f9dc9a4f",
+		"name": "GustavoNavarro_GraphqlWorkshop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "a",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ebb9d2c6-79f1-4a37-b186-2732da3315d3",
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"",
+							"let id = jsonData.data.addProject.id;",
+							"",
+							"pm.environment.set(\"id_project\", id);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "\n\nmutation addProject($project:ProjectInput!){\n    addProject(project:$project){\n         id\n         name\n    }\n}\n",
+						"variables": "{\n\t\"project\":{\n\t    \"name\":\"Project_GustavoNavarroRmz\"\n\t}\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "a - Create a new project, with your name in format Project_NameLastName (Example: “Project_JuanGonzalez” , and do appropriate tests to validate that the new project is created, send the ID generated for the project as variable to the next request."
+			},
+			"response": []
+		},
+		{
+			"name": "b",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0e3cdc72-8eeb-4807-b4bd-95ae2c380b99",
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"",
+							"let id = jsonData.data.addTodo.id;",
+							"let NewNameTask = jsonData.data.addTodo.todo;",
+							"",
+							"pm.environment.set(\"id_add_todoTask\", id);",
+							"",
+							"pm.globals.set('NewNameTask', NewNameTask);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify ID is not empty\", function () {",
+							"   id>0;",
+							"});",
+							"pm.test(\"verify data\", function () {",
+							"   pm.expect(pm.response.text()).to.include(id);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "\nmutation addTodo($todo:TodoInput!){\n    addTodo(todo:$todo){\n       id\n       todo\n       status\n       project{\n            id\n            name\n            }\n       }\n    }\n\n\n",
+						"variables": "{\t\n\t\"todo\":{\n\t    \"todo\":\"Task\",\n\t    \"projectId\":\"{{id_project}}\"\n\t}\n}\n"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "b - Create 1 requests to create a new task and associate it with the previously created project, and create proper tests to validate that the task is created successfully."
+			},
+			"response": []
+		},
+		{
+			"name": "c",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b02dc05e-176a-4acd-8093-0798b35630be",
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"let NamOfStask = jsonData.data.updateTodo.todo;",
+							"",
+							"let old = pm.globals.get('NewNameTask');",
+							"",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Validating change of NameTaslk\", function () {",
+							"   pm.expect(old).to.not.eql(NamOfStask);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation updateTodo($todoId:ID!,$todo:String,$status:Status){\n    updateTodo(todoId:$todoId,todo:$todo,status:$status){\n        id\n        todo\n        status\n        project{\n            id\n            name\n            }\n        comments{\n            id\n            text\n        }    \n       }\n        \n    }",
+						"variables": "{\n\t\"todoId\":\"{{id_add_todoTask}}\",\n\t\"todo\":\"Novatask\",\n\t\"status\":\"PENDING\"\n\t\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "c - Update the name of the task and validate that the name is updated correctly."
+			},
+			"response": []
+		},
+		{
+			"name": "d",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e9c76088-c0cf-425b-8c36-d8f04ba705a8",
+						"exec": [
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"let comment = jsonData.data.addComment.todo.comments.text;",
+							"let commentario = jsonData.data.addComment.todo.comments[0].text;",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test('Has data', function() {",
+							"  pm.expect(jsonData).to.have.property('data');",
+							"});",
+							"",
+							"pm.test(\"Verify comment is set\", function () {",
+							" pm.expect(commentario).to.equal(pm.environment.get(\"comment_test\"));",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation addComment($comment:CommentInput!){\n    addComment(comment:$comment){\n        id\n        text\n        todo{\n            id\n            todo\n            status\n            project{\n                    id\n                    name\n            }\n            comments{\n                    id\n                    text\n            }\n        }\n    }\n        \n}\n\n\n\n",
+						"variables": "{\n\t\"comment\":{\n\t\t\"text\":\"NovoComment\",\n\t\t\"todoId\":\"{{id_add_todoTask}}\"\n\t}\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "d - Create a comment in the task, validate that the comment is saved correctly.\n"
+			},
+			"response": []
+		},
+		{
+			"name": "e",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "492bbe69-1e10-43d3-8024-4fdf757462e2",
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"",
+							"let commentario2 = jsonData.data.addComment.todo.comments[1].text;",
+							"let id_of_second_comment = jsonData.data.addComment.todo.comments[1].id;",
+							"",
+							"pm.globals.set('id_of_second_comment', id_of_second_comment);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test('Has data', function() {",
+							"  pm.expect(jsonData).to.have.property('data');",
+							"});",
+							"",
+							"pm.test(\"Verify second comment is set\", function () {",
+							" pm.expect(commentario2).to.equal(pm.environment.get(\"second_comment\"));",
+							"});",
+							"",
+							"  "
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation addComment($comment:CommentInput!){\n    addComment(comment:$comment){\n        id\n        text\n        todo{\n            id\n            todo\n            status\n            project{\n                    id\n                    name\n            }\n            comments{\n                    id\n                    text\n            }\n        }\n    }\n        \n}\n\n\n\n",
+						"variables": "{\n\t\"comment\":{\n\t\t\"text\":\"{{second_comment}}\",\n\t\t\"todoId\":\"{{id_add_todoTask}}\"\n\t}\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "Create a 2nd comment in the task, validate that the comment is saved correctly.\n"
+			},
+			"response": []
+		},
+		{
+			"name": "F",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9b0e7370-d4de-4ea9-aa77-8a35584e75e9",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "\nmutation deleteComment($commentId: ID!){\n    deleteComment(commentId:$commentId)\n}\n\n",
+						"variables": "{\n\t\"commentId\":\"{{id_of_second_comment}}\"\n}\n\n"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "Now delete the 2nd comment created in the task, and validate it was deleted.\n"
+			},
+			"response": []
+		},
+		{
+			"name": "g",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e87f6912-36a2-425a-8ea4-283c2030cf1e",
+						"exec": [
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"let statusVar = jsonData.data.updateTodo.status;",
+							"",
+							"pm.test(\"Verify status var\", function () {",
+							" pm.expect(statusVar).to.eql('COMPLETED');",
+							"});",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation updateTodo($todoId:ID!,$todo:String,$status:Status){\n    updateTodo(todoId:$todoId,todo:$todo,status:$status){\n        id\n        todo\n        status\n        project{\n            id\n            name\n            }\n        comments{\n            id\n            text\n        }    \n       }\n        \n    }",
+						"variables": "{\n\t\"todoId\":\"{{id_add_todoTask}}\",\n\t\"todo\":\"Novatask\",\n\t\"status\":\"COMPLETED\"\n\t\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "Change the status of the task to “Completed” and validate that its status is changed to completed."
+			},
+			"response": []
+		},
+		{
+			"name": "h",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2a2ed9f6-2072-45ee-92a5-ef8968ce11a0",
+						"exec": [
+							"",
+							"var jsonData = pm.response.json();",
+							"let statusVar2 = jsonData.data.listTodos[0].status;",
+							"",
+							"",
+							"pm.test('Has data', function() {",
+							"  pm.expect(jsonData).to.have.property('data');",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"Verify status var\", function () {",
+							" pm.expect(statusVar2).to.eql('COMPLETED');",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query listTodos($projectId: ID, $showCompleted: Boolean){\n    listTodos(projectId:$projectId, showCompleted:$showCompleted){\n         id\n        todo\n        status\n        project{\n            id\n            name\n            }\n        comments{\n            id\n            text\n        }  \n    }\n}\n\n",
+						"variables": "{\n\t\"projectId\":\"{{id_project}}\",\n\t\"showCompleted\": true\n\t\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "Create a request to list all ToDos which are completed, and validate the task from the previous step and listed in the response."
+			},
+			"response": []
+		},
+		{
+			"name": "i",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f68f4a63-418d-4ba5-9409-081a0d368967",
+						"exec": [
+							"",
+							"var jsonData = pm.response.json();",
+							"let ArrayLenght = jsonData.data.listTodos.length;",
+							"",
+							"",
+							"pm.test(\"Verify status var\", function () {",
+							" pm.expect(ArrayLenght).to.eql(0);",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "QA2020",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query listTodos($projectId: ID, $showCompleted: Boolean){\n    listTodos(projectId:$projectId, showCompleted:$showCompleted){\n         id\n        todo\n        status\n        project{\n            id\n            name\n            }\n        comments{\n            id\n            text\n        }  \n    }\n}\n\n",
+						"variables": "{\n\t\"projectId\":\"{{id_project}}\",\n\t\"showCompleted\": false\n\t\n}"
+					}
+				},
+				"url": {
+					"raw": "{{URL2}}",
+					"host": [
+						"{{URL2}}"
+					]
+				},
+				"description": "Create a test to list all ToDos which are NOT marked as completed, here we should validate that the task is not there."
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "QA2020",
+				"type": "string"
+			}
+		]
+	},
+	"protocolProfileBehavior": {}
+}
